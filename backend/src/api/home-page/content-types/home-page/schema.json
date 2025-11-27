@@ -1,0 +1,46 @@
+{
+  "kind": "singleType",
+  "collectionName": "home_pages",
+  "info": {
+    "singularName": "home-page",
+    "pluralName": "home-pages",
+    "displayName": "Home Page",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "companyName": {
+      "type": "string"
+    },
+    "tagline_jp": {
+      "type": "string"
+    },
+    "tagline_kn": {
+      "type": "string"
+    },
+    "tagline_en": {
+      "type": "string"
+    },
+    "status_jp": {
+      "type": "string"
+    },
+    "status_kn": {
+      "type": "string"
+    },
+    "status_en": {
+      "type": "string"
+    },
+    "update_jp": {
+      "type": "string"
+    },
+    "update_kn": {
+      "type": "string"
+    },
+    "update_en": {
+      "type": "string"
+    }
+  }
+}

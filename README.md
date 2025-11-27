@@ -1,52 +1,82 @@
 # Shokari
 
-A minimal, elegant website for Shokari - Code Development Solutions
+A minimal website with an "Antigravity" particle animation system and Strapi CMS backend.
 
 ## Features
 
-- 🌟 **Animated Particle Background** - 80 glowing particles that drift across the screen with mouse-reactive interaction
-- 🖱️ **Mouse-Reactive Particles** - Particles move away from cursor creating natural ripple effect
-- 🎨 **Multilingual Content** - Text in Japanese (日本語), Kannada (ಕನ್ನಡ), and English
-- 🐦 **Detailed Crow Logo** - Traditional Indian artistic style with intricate patterns
-- ✨ **Smooth Animations** - Scroll-triggered fade-in effects and parallax hero section
-- 💎 **Glassmorphism Design** - Modern dark theme with blur effects
-- 📱 **Fully Responsive** - Optimized for all devices
-
-## Tech Stack
-
-- HTML5
-- CSS3 (with custom properties and animations)
-- Vanilla JavaScript (Canvas API for particle system)
-- Inter font family
-
-## Getting Started
-
-Simply open `index.html` in a modern web browser to view the website.
-
-```bash
-# Clone the repository
-git clone <your-repo-url>
-
-# Open index.html
-open index.html  # macOS
-xdg-open index.html  # Linux
-start index.html  # Windows
-```
+- **Minimal Design**: Clean, typography-focused layout
+- **Antigravity Particles**: Interactive background with upward-floating particles that respond to mouse movement
+- **Headless CMS**: Strapi backend for dynamic content management
+- **Docker Support**: Self-contained deployment with Docker Compose
 
 ## Project Structure
 
 ```
 shokari/
-├── index.html          # Main HTML file
-├── styles.css          # Stylesheet with animations
-├── script.js           # Particle animation and interactions
-├── shokari_crow_logo_detailed_*.png  # Detailed crow logo
-└── README.md           # This file
+├── index.html          # Frontend HTML
+├── styles.css          # Frontend CSS
+├── script.js           # Frontend JavaScript (particles + CMS integration)
+├── Dockerfile          # Frontend Docker image
+├── docker-compose.yml  # Docker Compose configuration
+└── backend/            # Strapi CMS
+    ├── src/
+    │   └── api/
+    │       ├── home-page/    # Home Page content type (Single Type)
+    │       └── feature/      # Feature content type (Collection Type)
+    └── Dockerfile      # Backend Docker image
 ```
 
-## Design Inspiration
+## Getting Started
 
-Inspired by [Google Antigravity](https://antigravity.google/pricing) with a unique Indian artistic aesthetic.
+### Prerequisites
+
+- Docker and Docker Compose
+- Node.js 18+ (for local development)
+
+### Running with Docker
+
+1. **Start the services:**
+   ```bash
+   docker-compose up --build
+   ```
+
+2. **Access the applications:**
+   - Frontend: http://localhost:8080
+   - Strapi Admin: http://localhost:1337/admin
+
+3. **First-time Strapi setup:**
+   - Visit http://localhost:1337/admin
+   - Create an admin account
+   - Go to Settings > Users & Permissions > Roles > Public
+   - Enable permissions for `home-page` (find, findOne) and `feature` (find, findOne)
+   - Create content in the Content Manager
+
+### Local Development
+
+#### Frontend
+Simply open `index.html` in a browser, or use a local server:
+```bash
+npx serve .
+```
+
+#### Backend
+```bash
+cd backend
+npm install
+npm run develop
+```
+
+## Content Types
+
+### Home Page (Single Type)
+- `companyName`: Company name
+- `tagline_jp`, `tagline_kn`, `tagline_en`: Taglines in Japanese, Kannada, and English
+- `status_jp`, `status_kn`, `status_en`: Status messages
+- `update_jp`, `update_kn`, `update_en`: Update messages
+
+### Feature (Collection Type)
+- `title_jp`, `title_kn`, `title_en`: Feature titles in multiple languages
+- `description`: Feature description
 
 ## License
 

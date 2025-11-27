@@ -150,5 +150,73 @@ const observer = new IntersectionObserver((entries) => {
 document.addEventListener('DOMContentLoaded', () => {
     const elements = document.querySelectorAll('.fade-in-up');
     elements.forEach(el => observer.observe(el));
+
+    // Fetch Content from Strapi
+    fetchContent();
 });
 
+// ===== CMS Integration =====
+const API_URL = 'http://localhost:1337/api';
+
+async function fetchContent() {
+    try {
+        // Fetch Home Page Data
+        const homeResponse = await fetch(`${API_URL}/home-page`);
+        if (homeResponse.ok) {
+            const homeData = await homeResponse.json();
+            const attr = homeData.data.attributes;
+
+            if (attr) {
+                updateText('.company-name', attr.companyName);
+                updateText('.tagline-jp', attr.tagline_jp);
+                updateText('.tagline-kn', attr.tagline_kn);
+                updateText('.tagline-en', attr.tagline_en);
+
+                updateText('.status-jp', attr.status_jp);
+                updateText('.status-kn', attr.status_kn);
+                updateText('.status-en', attr.status_en);
+
+                updateText('.update-jp', attr.update_jp);
+                updateText('.update-kn', attr.update_kn);
+                updateText('.update-en', attr.update_en);
+            }
+        }
+
+        // Fetch Features
+        const featuresResponse = await fetch(`${API_URL}/features`);
+        if (featuresResponse.ok) {
+            const featuresData = await featuresResponse.json();
+            const features = featuresData.data;
+
+            if (features && features.length > 0) {
+                const featuresContainer = document.querySelector('.features');
+                featuresContainer.innerHTML = ''; // Clear static content
+
+                features.forEach((feature, index) => {
+                    const attr = feature.attributes;
+                    const featureEl = document.createElement('div');
+                    featureEl.className = 'feature-item fade-in-up';
+                    featureEl.style.transitionDelay = `${index * 0.1}s`;
+
+                    featureEl.innerHTML = `
+                        <h3 class="feature-title-jp">${attr.title_jp || ''}</h3>
+                        <h3 class="feature-title-kn">${attr.title_kn || ''}</h3>
+                        <p class="feature-desc">${attr.title_en || ''}</p>
+                    `;
+
+                    featuresContainer.appendChild(featureEl);
+                    observer.observe(featureEl);
+                });
+            }
+        }
+    } catch (error) {
+        console.log('CMS not reachable, using static content.');
+    }
+}
+
+function updateText(selector, text) {
+    if (text) {
+        const el = document.querySelector(selector);
+        if (el) el.textContent = text;
+    }
+}
