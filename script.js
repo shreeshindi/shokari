@@ -1,69 +1,77 @@
-// ===== Particle Animation System =====
+// ===== Antigravity Particle System =====
 class Particle {
     constructor(canvas) {
         this.canvas = canvas;
-        this.reset();
-        // Random starting position
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
-        this.opacity = Math.random() * 0.5;
+        this.reset(true); // true for initial setup
     }
 
-    reset() {
-        this.size = Math.random() * 2 + 1;
+    reset(initial = false) {
+        this.x = Math.random() * this.canvas.width;
+        // If initial, place anywhere. If reset, place at bottom.
+        this.y = initial ? Math.random() * this.canvas.height : this.canvas.height + 10;
+
+        this.size = Math.random() * 2 + 0.5;
+        // Upward movement with slight horizontal drift
+        this.speedY = -1 * (Math.random() * 1.5 + 0.5);
         this.speedX = (Math.random() - 0.5) * 0.5;
-        this.speedY = (Math.random() - 0.5) * 0.5;
-        this.targetOpacity = Math.random() * 0.6 + 0.2;
-        this.fadeSpeed = Math.random() * 0.01 + 0.003;
+
+        this.opacity = 0;
+        this.targetOpacity = Math.random() * 0.5 + 0.1;
+        this.fadeSpeed = 0.01;
+
+        // Physics properties
+        this.vx = this.speedX;
+        this.vy = this.speedY;
+        this.friction = 0.98; // Air resistance
     }
 
     update(mouseX, mouseY) {
-        // Move particle
-        this.x += this.speedX;
-        this.y += this.speedY;
+        // Apply base movement
+        this.vy += (this.speedY - this.vy) * 0.02; // Return to natural speed
+        this.vx += (this.speedX - this.vx) * 0.02;
 
-        // Mouse interaction - particles move away from cursor
+        // Mouse Interaction - Repulsion Force
         if (mouseX !== undefined && mouseY !== undefined) {
             const dx = this.x - mouseX;
             const dy = this.y - mouseY;
             const distance = Math.sqrt(dx * dx + dy * dy);
-            const maxDistance = 150;
+            const forceRadius = 200;
 
-            if (distance < maxDistance) {
-                const force = (maxDistance - distance) / maxDistance;
-                const forceDirectionX = dx / distance;
-                const forceDirectionY = dy / distance;
+            if (distance < forceRadius) {
+                const force = (forceRadius - distance) / forceRadius;
+                const angle = Math.atan2(dy, dx);
 
-                this.x += forceDirectionX * force * 2;
-                this.y += forceDirectionY * force * 2;
+                const pushX = Math.cos(angle) * force * 2;
+                const pushY = Math.sin(angle) * force * 2;
+
+                this.vx += pushX;
+                this.vy += pushY;
             }
         }
 
-        // Fade in/out effect
-        if (Math.random() < 0.01) {
-            this.targetOpacity = Math.random() * 0.6 + 0.2;
-        }
+        // Apply velocity
+        this.x += this.vx;
+        this.y += this.vy;
 
+        // Fade in logic
         if (this.opacity < this.targetOpacity) {
             this.opacity += this.fadeSpeed;
-        } else {
-            this.opacity -= this.fadeSpeed;
         }
-        this.opacity = Math.max(0, Math.min(this.opacity, 1));
 
-        // Wrap around screen edges
+        // Reset if out of bounds (top)
+        if (this.y < -50) {
+            this.reset();
+        }
+
+        // Wrap horizontal
         if (this.x < 0) this.x = this.canvas.width;
         if (this.x > this.canvas.width) this.x = 0;
-        if (this.y < 0) this.y = this.canvas.height;
-        if (this.y > this.canvas.height) this.y = 0;
     }
 
     draw(ctx) {
         ctx.save();
         ctx.globalAlpha = this.opacity;
         ctx.fillStyle = '#ffffff';
-        ctx.shadowBlur = 8;
-        ctx.shadowColor = 'rgba(255, 255, 255, 0.5)';
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fill();
@@ -71,12 +79,12 @@ class Particle {
     }
 }
 
-// Initialize particle canvas
+// Initialize System
 const canvas = document.getElementById('particleCanvas');
 const ctx = canvas.getContext('2d');
 
 let particles = [];
-const particleCount = 80;
+const particleCount = 100; // More particles for the "void" feel
 
 function resizeCanvas() {
     canvas.width = window.innerWidth;
@@ -90,14 +98,20 @@ function initParticles() {
     }
 }
 
-// Mouse tracking
+// Mouse Tracking
 let mouseX, mouseY;
-canvas.addEventListener('mousemove', (event) => {
-    mouseX = event.clientX;
-    mouseY = event.clientY;
+window.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
 });
 
-function animateParticles() {
+window.addEventListener('mouseleave', () => {
+    mouseX = undefined;
+    mouseY = undefined;
+});
+
+// Animation Loop
+function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     particles.forEach(particle => {
@@ -105,20 +119,21 @@ function animateParticles() {
         particle.draw(ctx);
     });
 
-    requestAnimationFrame(animateParticles);
+    requestAnimationFrame(animate);
 }
 
-// Start animation
+// Start
 resizeCanvas();
 initParticles();
-animateParticles();
+animate();
 
 window.addEventListener('resize', () => {
     resizeCanvas();
-    initParticles();
+    // Optional: Re-init particles if screen size changes drastically
+    // initParticles(); 
 });
 
-// ===== Scroll Animation Observer =====
+// Intersection Observer for Scroll Animations
 const observerOptions = {
     threshold: 0.1,
     rootMargin: '0px 0px -50px 0px'
@@ -132,42 +147,8 @@ const observer = new IntersectionObserver((entries) => {
     });
 }, observerOptions);
 
-// Observe all elements with fade-in-up class
 document.addEventListener('DOMContentLoaded', () => {
     const elements = document.querySelectorAll('.fade-in-up');
     elements.forEach(el => observer.observe(el));
-
-    // Add stagger delay to feature cards
-    const featureCards = document.querySelectorAll('.feature-card');
-    featureCards.forEach((card, index) => {
-        card.style.transitionDelay = `${index * 0.1}s`;
-    });
-
-    // Parallax effect for hero on scroll
-    window.addEventListener('scroll', () => {
-        const scrolled = window.pageYOffset;
-        const hero = document.querySelector('.hero-content');
-        if (hero) {
-            hero.style.transform = `translateY(${scrolled * 0.4}px)`;
-            hero.style.opacity = 1 - (scrolled / 600);
-        }
-    });
-
-    // Smooth reveal animation for content blocks
-    const contentBlocks = document.querySelectorAll('.content-block');
-    contentBlocks.forEach((block, index) => {
-        block.style.transitionDelay = `${index * 0.15}s`;
-    });
-});
-
-// Performance optimization: Debounce scroll events
-let scrollTimeout;
-window.addEventListener('scroll', () => {
-    if (scrollTimeout) {
-        window.cancelAnimationFrame(scrollTimeout);
-    }
-    scrollTimeout = window.requestAnimationFrame(() => {
-        // Additional scroll-based animations can be added here
-    });
 });
 
